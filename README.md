@@ -4,7 +4,16 @@ Magic Eden Assessment
 
 Instructions on how to run and test code
 -
-java -jar com.magiceden.driver.DynamicLoadDriver
+
+At root of pom.xml, build the jar
+1) mvn package
+
+cd to target where maven builds jar
+1) java -classpath magiceden-1.0-SNAPSHOT-jar-with-dependencies.jar  magicEden.DynamicLoadDriver
+
+Run all JUnit test cases
+1) mvn test
+
 
 Design Pattern Discussion
 -
