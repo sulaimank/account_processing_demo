@@ -102,7 +102,7 @@ public class DynamicLoadDriver
         DynamicLoadDriver driver = new DynamicLoadDriver();
         JsonUtils jsonUtils = new JsonUtils();
 
-        ArrayList<Account> accounts = jsonUtils.loadJsonAccountFile("resources/coding-challenge-input.json");
+        ArrayList<Account> accounts = jsonUtils.loadJsonAccountFile("../../resources/coding-challenge-input.json");
         driver.processAccounts(accounts);
 
         // safely shutdown if no accounts to process
