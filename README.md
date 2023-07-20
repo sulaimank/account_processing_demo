@@ -5,24 +5,26 @@ Magic Eden Assessment
 Instructions on how to run and test code
 -
 
-At root of pom.xml, build the jar
-1) mvn package
+At root of pom.xml, install jar dependencies and build the jar containing all dependencies
+1) mvn install 
+2) mvn package
 
-cd to target where maven builds jar
+To run the driver's main class cd to target where maven builds the jar
 1) java -classpath magiceden-1.0-SNAPSHOT-jar-with-dependencies.jar  magicEden.DynamicLoadDriver
 
 Run all JUnit test cases
 1) mvn test
 
 
+
 Design Pattern Discussion
 -
 As I architected a solution I kept in mind time constraints but also in keeping with the spirit that you
 wanted production-level real-time system that emulates the indexing of data on the blockchain.  I added enough
-error checks and handling to ensure that errors are logged quickly.
+error checks and handling to ensure that errors are logged quickly.  
 
 I used Gson library which is a Google library that allows for parsing json
-files based on a POJO class.  The Account class is the POJO that as I read in an array of accounts.
+files based on several POJO classes that represent the JSON structure.  The Account class is the POJO that as I read in an array of accounts.
 
 Since the supplied JSON file contains data, I created a robust JUnit file that in the setup, loads the JSON
 array into memory.  Then each account element was handled in a continuous uniform and random distribution
@@ -34,8 +36,8 @@ conditions.  For example, I noticed on account did not have a version which was 
 I default to 0.  I added a test case for that and made sure the NPE did not get generated.
 
 I am also assuming that same account records (same account id) with different versions are being processed in
-order.  This might not be the case in production.  So I would create a PriorityQueue sorted by version.  
-
+order.  This might not be the case in production.  So I would create a PriorityQueue sorted by version so I don't have to iterate
+the account list to find the greatest version number.
 
 In development, I would work off of feature branches that match a story.  And then I would push the PR to GitHub and
 have another person (sometimes multiple people for complex stories) code review the PR.  Once approved, I would merge
@@ -47,7 +49,15 @@ and process the message.
 
 Observability & Monitor to add to a production system
 -
+I would monitor the thread pool and adjust either the thread pool strategy (ie. bounded thread pool vs cached).  I would
+also monitor system and memory load on the instance running the process.
+
+Logs are equally important.  I integrated log4j and used that when testing how the threads behave in the thread pool.  The
+thread id is logged.  It can give you clues as how the thread pool can handle multiple threads
 
 
-
+Some questions / thoughts
+-
+If a message is being processed and a newer message comes in (same message id) but with different data payload,
+if we cancel the older one, we don't process the older message's data.  
 

@@ -49,9 +49,7 @@ public class AccountIndexerProcessor {
         final String accountID = account.getId();
         final Integer newerVersion = account.getVersion();
         if (accountIdToVersionMap.containsKey(accountID) == false) {
-            List<Account> accountList = new ArrayList<>();
-            accountList.add(account);
-            accountIdToVersionMap.put(accountID, accountList);
+            accountIdToVersionMap.put(accountID, new ArrayList<>(List.of(account)));
         } else {
             // Safe check to make sure that account has not been previously ingested
             if (account.isIngested()) {
@@ -65,13 +63,15 @@ public class AccountIndexerProcessor {
             // can be processed out of order (ie. v3 comes before v1)
             List<Account> accountList = accountIdToVersionMap.get(accountID);
             accountList.forEach(act -> {
-                Integer version = act.getVersion();
+                final Integer version = act.getVersion();
                 if (version < newerVersion) {
                     // If the same account is ingested with a newer version number and the
                     // old callback has not fired yet, cancel the older version's active callback
                     if (!act.isIngested()) {
                         logger.info("The previous version " + act.getVersion() + " has not been ingested.  Cancel old callback in favor of the new one");
                         ProcessAccountRunnable runnable = act.getProcessAccountRunnable();
+
+                        // Cancel old callbacks from previous versions if they have not fired
                         runnable.stop();
                     }
                 }
@@ -79,8 +79,6 @@ public class AccountIndexerProcessor {
 
             // This map keeps track of account versions based on account id
             accountIdToVersionMap.get(accountID).add(account);
-
-            // Cancel old callbacks from previous versions if they have not fired
         }
 
         // Display a short message log message to console when each (accountId + version)

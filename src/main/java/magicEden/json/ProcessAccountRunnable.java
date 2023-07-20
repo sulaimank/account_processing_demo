@@ -61,7 +61,10 @@ public class ProcessAccountRunnable implements Runnable {
 
             // Log that we have ingested the account
             logger.info("Account " + account.getId() + ", version: " + account.getVersion() + " has been ingested");
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignored) {
+            logger.info("Thread " + account.getId() + " has been interrupted");
+
+            account.setIngested(false);     // ensure it is not ingested
         }
     }
 
