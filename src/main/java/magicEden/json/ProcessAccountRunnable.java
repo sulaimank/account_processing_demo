@@ -3,6 +3,12 @@ package magicEden.json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This is manages the thread for the processing of
+ * a single account.  To simulate processing, the thread
+ * sleeps for a certain time (in milliseconds) based on
+ * the account CallbackTimeMs.  This introduces a delay
+ */
 public class ProcessAccountRunnable implements Runnable {
     public static Logger logger = LoggerFactory.getLogger(ProcessAccountRunnable.class);
 
@@ -43,13 +49,17 @@ public class ProcessAccountRunnable implements Runnable {
         logger.info("Scheduling the callback timer for " + account.getCallbackTimeMs() + " milliseconds");
 
         try {
+            // Ensure the ingested flag is false
             account.setIngested(false);
 
+            // Put the thread to sleep.  Note this thread is running in a thread pool
+            // Management of the thread is by the thread pool
             Thread.sleep(account.getCallbackTimeMs());
 
             // Specify that this account has been ingested
             account.setIngested(true);
 
+            // Log that we have ingested the account
             logger.info("Account " + account.getId() + ", version: " + account.getVersion() + " has been ingested");
         } catch (InterruptedException e) {
         }

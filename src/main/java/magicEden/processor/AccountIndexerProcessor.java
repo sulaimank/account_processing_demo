@@ -32,6 +32,8 @@ public class AccountIndexerProcessor {
 
         // Initialize token value map.  This map will contain highest token-value accounts
         // by AccountType (taking into account right version)
+        // It is better to track token values in real time vs iterating thru whole data
+        // structure as there can be many accounts that were processed
         highestTokenValueMap = new HashMap<>() {{
             put(AccountType.MINT, 0);
             put(AccountType.META_DATA, 0);
@@ -51,8 +53,7 @@ public class AccountIndexerProcessor {
             accountList.add(account);
             accountIdToVersionMap.put(accountID, accountList);
         } else {
-            // TODO - If an old version of the same account is ingested, ignore that update
-
+            // Safe check to make sure that account has not been previously ingested
             if (account.isIngested()) {
                 logger.info("The account has already been ingested, ignore the update");
 
@@ -60,7 +61,8 @@ public class AccountIndexerProcessor {
                 return;
             }
 
-            // Get the highest version
+            // Get the highest version.  We need to iterate whole list as versions
+            // can be processed out of order (ie. v3 comes before v1)
             List<Account> accountList = accountIdToVersionMap.get(accountID);
             accountList.forEach(act -> {
                 Integer version = act.getVersion();
@@ -75,6 +77,7 @@ public class AccountIndexerProcessor {
                 }
             });
 
+            // This map keeps track of account versions based on account id
             accountIdToVersionMap.get(accountID).add(account);
 
             // Cancel old callbacks from previous versions if they have not fired
@@ -84,6 +87,7 @@ public class AccountIndexerProcessor {
         // tuple has been indexed.
         final String tuple = account.getId() + account.getVersion();
         if (!indexedTuple.contains(tuple)) {
+            // This is a unique tuple - log it
             logger.info("Account (id=" + accountID + ", " + account.getVersion() + ") has been indexed");
             indexedTuple.add(tuple);
         } else {
@@ -91,13 +95,17 @@ public class AccountIndexerProcessor {
         }
 
         // Calculate highest token-value
-        // TODO - is it more efficient to always set the map or calculate max and then set when there is a max
         Integer highestToken = highestTokenValueMap.get(account.getAccountType());
         highestTokenValueMap.put(account.getAccountType(), Math.max(highestToken, account.getTokens()));
 
+        // Process this account in a thread managed by the thread pool.
+        // The account is wrapped in a runnable class to manage the thread
         accountPool.execute(new ProcessAccountRunnable(account));
     }
 
+    /**
+     * Display the highest token value by account type
+     */
     public void displayHighestTokenValue() {
         highestTokenValueMap.forEach((accountType, value) -> {
             logger.info("Account Type: " + accountType + ", Highest Token Value: " + value);
@@ -114,8 +122,11 @@ public class AccountIndexerProcessor {
     public void shutdown() {
         logger.info("shutdown() hook - display highest token value and gracefully shutdown thread pool");
 
+        // We are done processing - print the highest token value
         displayHighestTokenValue();
 
+        // Shutdown the thread pool.  The thread pool will wait for running threads
+        // to finish.  No new threads added to the thread pool after this
         accountPool.shutdown();
     }
 }

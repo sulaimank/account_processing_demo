@@ -1,5 +1,8 @@
 package magicEden.json;
 
+/**
+ * This class is a POJO that represents the Solana accounts.
+ */
 public class Account {
     // Unique identifier of the account
     private String id;
@@ -71,7 +74,12 @@ public class Account {
     }
 
 
+    // Used to keep track on whether this account has been injested
     private transient boolean isIngested;
+
+    // We save a reference to the runnable class so we have control
+    // so we can stop processing this account version if a newer
+    // version of the account with same id is processed
     private transient ProcessAccountRunnable processAccountRunnable;
 
 

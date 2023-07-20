@@ -13,6 +13,11 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * This is the main entry-point for simulating inbound accounts that arrive
+ * in random time (0-1 seconds apart).  To simulate data, a data file exists
+ * that contains data emulating indexing of data on the blockchain.
+ */
 public class DynamicLoadDriver
 {
     public static Logger logger = LoggerFactory.getLogger(DynamicLoadDriver.class);
@@ -32,24 +37,20 @@ public class DynamicLoadDriver
         jobSchedular = (account -> {
             logger.info("*** Handling Account " + account.toString() + " ***");
 
+            // To keep track of the number of accounts handled
             AtomicInteger accountCount = new AtomicInteger();
+
             final int ingestionDelay = getRandomUniformDistribution();
             logger.debug("\tGoing to delay " + ingestionDelay + " milliseconds");
-
-            long start = System.currentTimeMillis();
 
             try {
                 TimeUnit.MILLISECONDS.sleep(ingestionDelay);
             } catch (InterruptedException ignored) {
             }
-            long end = System.currentTimeMillis();
 
-            final long actualThreadDelay = end - start;
-
-            logger.info("Going to handle account " + account.getId());
+            logger.info("Processing account.  Going to handle account " + account.getId());
             accountIndexer.handleAccountProcessing(account);
             accountCount.getAndIncrement();
-
             logger.debug("Processed account count " + accountCount);
 
             return account;
@@ -70,10 +71,18 @@ public class DynamicLoadDriver
         return ThreadLocalRandom.current().nextInt(min, max + 1);
     }
 
+    /**
+     * Submit the account to thread pool
+     * @param account - Account to ingest
+     * @return - processed account
+     */
     public Account submit(Account account) {
         return jobSchedular.submit(account);
     }
 
+    /**
+     * Shutdown the thread pool
+     */
     public void shutdown() {
         accountIndexer.shutdown();
     }
@@ -83,14 +92,9 @@ public class DynamicLoadDriver
     }
 
     private void processAccounts(List<Account> accounts) {
-        accounts.stream().forEach(account -> {
+        accounts.forEach(account -> {
             // Simulation starts after a delay
-            Account submittedAccount = jobSchedular.submit(account);
-
-            try {
-                TimeUnit.MILLISECONDS.sleep(submittedAccount.getCallbackTimeMs() + 100);
-            } catch (InterruptedException ignored) {
-            }
+            jobSchedular.submit(account);
         });
 
     }
@@ -99,6 +103,8 @@ public class DynamicLoadDriver
         // Enable log4j - configure log4j properties
         BasicConfigurator.configure();
 
+        // Create a driver that simulates account updates in an
+        // asynchronous manner from JSON file
         DynamicLoadDriver driver = new DynamicLoadDriver();
         JsonUtils jsonUtils = new JsonUtils();
 

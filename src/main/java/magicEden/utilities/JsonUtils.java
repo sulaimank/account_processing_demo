@@ -11,6 +11,9 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * JSON utility methods to help parse and process JSON files
+ */
 public class JsonUtils {
     public ArrayList<Account> loadJsonAccountFile(String jsonFileName) {
         // Read JSON from coding-challenge-input which simulates various account types
