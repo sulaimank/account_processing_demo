@@ -8,7 +8,6 @@ Instructions on how to run and test code
 At root of pom.xml, install jar dependencies and build the jar containing all dependencies
 
 1) mvn install
-2) mvn package
 
 To run the driver's main class cd to target where maven builds the jar
 
