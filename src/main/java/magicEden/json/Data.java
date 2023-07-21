@@ -6,7 +6,7 @@ package magicEden.json;
  * same AccountType have the same data schema.
  * Note: This schema is fixed
  * Note: It would be better to parse JSON data elements in a polymorphic
- *       deserialization but to do that would require custom deserialization
+ * deserialization but to do that would require custom deserialization
  */
 public class Data {
     private String img;

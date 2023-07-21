@@ -23,6 +23,7 @@ public class JsonUtils {
         assert resourceAsStream != null;
 
         final BufferedReader br = new BufferedReader(new InputStreamReader(resourceAsStream));
-        return gson.fromJson(br, new TypeToken<List<Account>>() {}.getType());
+        return gson.fromJson(br, new TypeToken<List<Account>>() {
+        }.getType());
     }
 }

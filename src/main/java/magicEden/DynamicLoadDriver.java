@@ -18,8 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * in random time (0-1 seconds apart).  To simulate data, a data file exists
  * that contains data emulating indexing of data on the blockchain.
  */
-public class DynamicLoadDriver
-{
+public class DynamicLoadDriver {
     public static Logger logger = LoggerFactory.getLogger(DynamicLoadDriver.class);
 
     private JobSchedular jobSchedular;
@@ -73,6 +72,7 @@ public class DynamicLoadDriver
 
     /**
      * Submit the account to thread pool
+     *
      * @param account - Account to ingest
      * @return - processed account
      */
