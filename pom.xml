@@ -76,7 +76,7 @@
         <powermock.version>1.7.1</powermock.version>
         <maven.shade>3.1.0</maven.shade>
         <src.dir>/src</src.dir>
-        <test.dir>/test-src</test.dir>
+        <test.dir>/test</test.dir>
         <project.build.java.version>1.11</project.build.java.version>
         <org.apache.maven.plugins.maven-compiler-plugin.version>2.5.1
         </org.apache.maven.plugins.maven-compiler-plugin.version>

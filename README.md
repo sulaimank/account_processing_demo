@@ -71,6 +71,8 @@ also monitor system and memory load on the instance running the process.
 Logs are equally important. I integrated log4j and used that when testing how the threads behave in the thread pool. The
 thread id is logged. It can give you clues as how the thread pool can handle multiple threads
 
+Also, in a native cloud deployment, there are 3rd party apps that collect metrics on performance.
+
 
 Some questions / thoughts
 -
