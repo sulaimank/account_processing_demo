@@ -76,10 +76,13 @@ public class SolanaIndexerTest extends TestCase {
         });
 
         final AccountIndexerProcessor accountIndexer = jobSchedular.getAccountIndexer();
+        accountIndexer.displayHighestTokenValue();
 
+        // Since there is only 2 accounts we are testing, each with different account types, the max tokens should equal the
+        // token value in their respective account
         assertEquals("Invalid highest token value", accountIndexer.getHighestTokenValueByAccountType(AccountType.MASTER_EDITION), 0);
-        assertEquals("Invalid highest token value", accountIndexer.getHighestTokenValueByAccountType(AccountType.MINT), 243);
-        assertEquals("Invalid highest token value", accountIndexer.getHighestTokenValueByAccountType(AccountType.META_DATA), 322);
+        assertEquals("Invalid highest token value", accountIndexer.getHighestTokenValueByAccountType(AccountType.MINT), account1.getTokens().intValue());
+        assertEquals("Invalid highest token value", accountIndexer.getHighestTokenValueByAccountType(AccountType.META_DATA), account2.getTokens().intValue());
     }
 
     /**

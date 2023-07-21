@@ -22,8 +22,6 @@ public class AccountIndexerProcessor {
     public static Logger logger = LoggerFactory.getLogger(AccountIndexerProcessor.class);
 
     private final ExecutorService accountPool;
-
-    private HashSet<String> indexedTuple = new HashSet<>();
     private Map<String, List<Account>> accountIdToVersionMap = new HashMap<>();
 
     public AccountIndexerProcessor() {
@@ -32,11 +30,19 @@ public class AccountIndexerProcessor {
         accountPool = Executors.newCachedThreadPool();
     }
 
+    private void logUniqueAccountVersionTuple(Account account) {
+        // Display a short message log message to console when each (accountId + version)
+        // tuple has been indexed.
+        logger.info("Account (id=" + account.getId() + ", " + account.getVersion() + ") has been indexed");
+    }
+
     public void handleAccountProcessing(Account account) {
         final String accountID = account.getId();
         final Integer newerVersion = account.getVersion();
-        if (accountIdToVersionMap.containsKey(accountID) == false) {
+        if (!accountIdToVersionMap.containsKey(accountID)) {
             accountIdToVersionMap.put(accountID, new ArrayList<>(List.of(account)));
+
+            logUniqueAccountVersionTuple(account);
         } else {
             // Safe check to make sure that account has not been previously ingested
             if (account.isIngested()) {
@@ -46,9 +52,16 @@ public class AccountIndexerProcessor {
                 return;
             }
 
+            // If the account is unique log the indexing of the tuple
+            List<Account> accountList = accountIdToVersionMap.get(accountID);
+            if (!accountList.contains(account)) {
+                logUniqueAccountVersionTuple(account);
+            } else {
+                logger.info("Duplicate Index Handled:: Account (id=" + accountID + ", " + account.getVersion() + ") has been indexed");
+            }
+
             // Get the highest version.  We need to iterate whole list as versions
             // can be processed out of order (ie. v3 comes before v1)
-            List<Account> accountList = accountIdToVersionMap.get(accountID);
             accountList.forEach(act -> {
                 final Integer version = act.getVersion();
                 if (version < newerVersion) {
@@ -68,27 +81,12 @@ public class AccountIndexerProcessor {
             accountIdToVersionMap.get(accountID).add(account);
         }
 
-        // Display a short message log message to console when each (accountId + version)
-        // tuple has been indexed.
-        final String tuple = account.getId() + account.getVersion();
-        if (!indexedTuple.contains(tuple)) {
-            // This is a unique tuple - log it
-            logger.info("Account (id=" + accountID + ", " + account.getVersion() + ") has been indexed");
-            indexedTuple.add(tuple);
-        } else {
-            logger.info("Duplicate Index Handled:: Account (id=" + accountID + ", " + account.getVersion() + ") has been indexed");
-        }
-
         // Process this account in a thread managed by the thread pool.
         // The account is wrapped in a runnable class to manage the thread
         accountPool.execute(new ProcessAccountRunnable(account));
     }
 
-    private Map<AccountType, IntSummaryStatistics> getTokenStats() {
-        // Create a list of all accounts and all account types (ie. flatten this map)
-        List<Account> allAccounts = new ArrayList<>();
-        accountIdToVersionMap.forEach((key, value) -> allAccounts.addAll(value));
-
+    private Map<AccountType, IntSummaryStatistics> getTokenStats(List<Account> allAccounts) {
         // Calculate the token summary stats grouped by account type
         return allAccounts.stream().collect(Collectors.groupingBy(Account::getAccountType,
                                                                   Collectors.summarizingInt(Account::getTokens)));
@@ -100,19 +98,34 @@ public class AccountIndexerProcessor {
     public void displayHighestTokenValue() {
         logger.info("Displaying highest token value grouped by account type");
 
-        final Map<AccountType, IntSummaryStatistics> byAccountType = getTokenStats();
+        List<Account> allAccounts = new ArrayList<>();
+        accountIdToVersionMap.forEach((key, value) -> allAccounts.addAll(value));
+
+        final Map<AccountType, IntSummaryStatistics> byAccountType = getTokenStats(allAccounts);
         byAccountType.forEach((accountType, tokenStats) -> logger.info("Account Type: " + accountType + ", Highest Token Value: " + tokenStats.getMax()));
     }
 
     /**
-     * Get the highest token value by account type.  Use for informational only
-     * as this is expensive to do by account type
+     * Get the highest token value by account type.
      * @param type - account type
      * @return int representing the highest token value for the account type
      */
     public int getHighestTokenValueByAccountType(AccountType type) {
-        final Map<AccountType, IntSummaryStatistics> byAccountType = getTokenStats();
-        return byAccountType.get(type).getMax();
+        // Filter out all the account types that we are interested in
+        List<Account> allAccounts = new ArrayList<>();
+        accountIdToVersionMap.forEach((key, accounts) -> {
+            List<Account> accountsByType = accounts.stream().filter(account -> account.getAccountType() == type).collect(Collectors.toList());
+            allAccounts.addAll(accountsByType);
+        });
+
+        final Map<AccountType, IntSummaryStatistics> byAccountType = getTokenStats(allAccounts);
+        if (!byAccountType.isEmpty()) {
+            return byAccountType.get(type).getMax();
+        } else {
+            // Returning 0 for now since there was no match.
+            logger.info("There was no " + type + " account types.  Indeterminate high token value");
+            return 0;
+        }
     }
 
     /**
