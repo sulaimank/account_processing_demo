@@ -10,6 +10,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * This is the main processor.  It accepts inbound accounts and processes each one.
@@ -23,27 +24,12 @@ public class AccountIndexerProcessor {
     private final ExecutorService accountPool;
 
     private HashSet<String> indexedTuple = new HashSet<>();
-    private Map<AccountType, Integer> highestTokenValueMap;
     private Map<String, List<Account>> accountIdToVersionMap = new HashMap<>();
 
     public AccountIndexerProcessor() {
         // Create a cached thread pool.  Since processing an account is a very small task
         // a cached thread pool will provide additional threads as needed.
         accountPool = Executors.newCachedThreadPool();
-
-        // Initialize token value map.  This map will contain highest token-value accounts
-        // by AccountType (taking into account right version)
-        // It is better to track token values in real time vs iterating thru whole data
-        // structure as there can be many accounts that were processed
-        highestTokenValueMap = new HashMap<>() {{
-            put(AccountType.MINT, 0);
-            put(AccountType.META_DATA, 0);
-            put(AccountType.MASTER_EDITION, 0);
-            put(AccountType.AUCTION, 0);
-            put(AccountType.AUCTION_DATA, 0);
-            put(AccountType.ESCROW, 0);
-            put(AccountType.ACCOUNT, 0);
-        }};
     }
 
     public void handleAccountProcessing(Account account) {
@@ -93,36 +79,47 @@ public class AccountIndexerProcessor {
             logger.info("Duplicate Index Handled:: Account (id=" + accountID + ", " + account.getVersion() + ") has been indexed");
         }
 
-        // Calculate highest token-value
-        Integer highestToken = highestTokenValueMap.get(account.getAccountType());
-        highestTokenValueMap.put(account.getAccountType(), Math.max(highestToken, account.getTokens()));
-
         // Process this account in a thread managed by the thread pool.
         // The account is wrapped in a runnable class to manage the thread
         accountPool.execute(new ProcessAccountRunnable(account));
+    }
+
+    private Map<AccountType, IntSummaryStatistics> getTokenStats() {
+        // Create a list of all accounts and all account types (ie. flatten this map)
+        List<Account> allAccounts = new ArrayList<>();
+        accountIdToVersionMap.forEach((key, value) -> allAccounts.addAll(value));
+
+        // Calculate the token summary stats grouped by account type
+        return allAccounts.stream().collect(Collectors.groupingBy(Account::getAccountType,
+                                                                  Collectors.summarizingInt(Account::getTokens)));
     }
 
     /**
      * Display the highest token value by account type
      */
     public void displayHighestTokenValue() {
-        highestTokenValueMap.forEach((accountType, value) -> {
-            logger.info("Account Type: " + accountType + ", Highest Token Value: " + value);
-        });
+        logger.info("Displaying highest token value grouped by account type");
+
+        final Map<AccountType, IntSummaryStatistics> byAccountType = getTokenStats();
+        byAccountType.forEach((accountType, tokenStats) -> logger.info("Account Type: " + accountType + ", Highest Token Value: " + tokenStats.getMax()));
     }
 
+    /**
+     * Get the highest token value by account type.  Use for informational only
+     * as this is expensive to do by account type
+     * @param type - account type
+     * @return int representing the highest token value for the account type
+     */
     public int getHighestTokenValueByAccountType(AccountType type) {
-        return highestTokenValueMap.get(type);
+        final Map<AccountType, IntSummaryStatistics> byAccountType = getTokenStats();
+        return byAccountType.get(type).getMax();
     }
 
     /**
      * Initiates an orderly shutdown in which previously submitted tasks are executed, but no new tasks will be accepted.
      */
     public void shutdown() {
-        logger.info("shutdown() hook - display highest token value and gracefully shutdown thread pool");
-
-        // We are done processing - print the highest token value
-        displayHighestTokenValue();
+        logger.info("shutdown() of thread pool");
 
         try {
             // Shutdown the thread pool.  The thread pool will wait for running threads
@@ -131,6 +128,9 @@ public class AccountIndexerProcessor {
 
             if (!accountPool.awaitTermination(20, TimeUnit.SECONDS)) {
                 logger.error("************** Threads did not get time to finish within the 20 second window ***********");
+            } else {
+                // We are done processing - print the highest token value
+                displayHighestTokenValue();
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);

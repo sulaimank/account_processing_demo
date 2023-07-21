@@ -52,7 +52,6 @@ public class SolanaIndexerTest extends TestCase {
         accounts.forEach(account -> jobSchedular.submit(account));
 
         final AccountIndexerProcessor accountIndexer = jobSchedular.getAccountIndexer();
-
         assertEquals("Invalid highest token value", accountIndexer.getHighestTokenValueByAccountType(AccountType.MASTER_EDITION), 901);
         assertEquals("Invalid highest token value", accountIndexer.getHighestTokenValueByAccountType(AccountType.AUCTION_DATA), 960);
         assertEquals("Invalid highest token value", accountIndexer.getHighestTokenValueByAccountType(AccountType.MINT), 999);
