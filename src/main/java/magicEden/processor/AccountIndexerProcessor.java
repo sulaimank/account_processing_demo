@@ -22,7 +22,7 @@ public class AccountIndexerProcessor {
     public static Logger logger = LoggerFactory.getLogger(AccountIndexerProcessor.class);
 
     private final ExecutorService accountPool;
-    private Map<String, List<Account>> accountIdToVersionMap = new HashMap<>();
+    private Map<String, PriorityQueue<Account>> accountIdToVersionMap = new HashMap<>();
 
     public AccountIndexerProcessor() {
         // Create a cached thread pool.  Since processing an account is a very small task
@@ -36,11 +36,13 @@ public class AccountIndexerProcessor {
         logger.info("Account (id=" + account.getId() + ", " + account.getVersion() + ") has been indexed");
     }
 
-    public void handleAccountProcessing(Account account) {
+    synchronized public void handleAccountProcessing(Account account) {
         final String accountID = account.getId();
         final Integer newerVersion = account.getVersion();
         if (!accountIdToVersionMap.containsKey(accountID)) {
-            accountIdToVersionMap.put(accountID, new ArrayList<>(List.of(account)));
+            PriorityQueue<Account> pq = new PriorityQueue<>(2, new AccountComparator());
+            pq.add(account);
+            accountIdToVersionMap.put(accountID, pq);
 
             logUniqueAccountVersionTuple(account);
         } else {
@@ -53,29 +55,24 @@ public class AccountIndexerProcessor {
             }
 
             // If the account is unique log the indexing of the tuple
-            List<Account> accountList = accountIdToVersionMap.get(accountID);
+            PriorityQueue<Account> accountList = accountIdToVersionMap.get(accountID);
             if (!accountList.contains(account)) {
                 logUniqueAccountVersionTuple(account);
             } else {
                 logger.info("Duplicate Index Handled:: Account (id=" + accountID + ", " + account.getVersion() + ") has been indexed");
             }
 
-            // Get the highest version.  We need to iterate whole list as versions
-            // can be processed out of order (ie. v3 comes before v1)
-            accountList.forEach(act -> {
-                final Integer version = act.getVersion();
-                if (version < newerVersion) {
-                    // If the same account is ingested with a newer version number and the
-                    // old callback has not fired yet, cancel the older version's active callback
-                    if (!act.isIngested()) {
-                        logger.info("The previous version " + act.getVersion() + " has not been ingested.  Cancel old callback in favor of the new one");
-                        ProcessAccountRunnable runnable = act.getProcessAccountRunnable();
+            final Account previousHighestAccount = accountList.peek();
+            if ((previousHighestAccount != null) && !previousHighestAccount.isIngested() && (previousHighestAccount.getVersion() < newerVersion)) {
+                logger.info("The previous version " + previousHighestAccount.getVersion() + " has not been ingested.  Cancel old callback in favor of the new one");
 
-                        // Cancel old callbacks from previous versions if they have not fired
-                        runnable.stop();
-                    }
-                }
-            });
+                // If the same account is ingested with a newer version number and the
+                // old callback has not fired yet, cancel the older version's active callback
+                ProcessAccountRunnable runnable = previousHighestAccount.getProcessAccountRunnable();
+
+                // Cancel old callbacks from previous versions if they have not fired
+                runnable.stop();
+            }
 
             // This map keeps track of account versions based on account id
             accountIdToVersionMap.get(accountID).add(account);
@@ -107,6 +104,7 @@ public class AccountIndexerProcessor {
 
     /**
      * Get the highest token value by account type.
+     *
      * @param type - account type
      * @return int representing the highest token value for the account type
      */

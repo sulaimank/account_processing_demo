@@ -117,7 +117,7 @@ public class SolanaIndexerTest extends TestCase {
     public void testUpdatesWithCancellationScenario() {
         Account account1 = accounts.get(0);
         account1.setVersion(1);
-        account1.setCallbackTimeMs(25000);      // set high callback so we can cancel it
+        account1.setCallbackTimeMs(50000);      // set high callback so we can cancel it
 
         Account account2 = accounts.get(1);
         account2.setId(account1.getId());

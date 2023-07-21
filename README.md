@@ -38,9 +38,9 @@ conditions. For example, I noticed on account did not have a version which was c
 I default to 0. I added a test case for that and made sure the NPE did not get generated.
 
 I am also assuming that same account records (same account id) with different versions are being processed in
-order. This might not be the case in production. So I would create a PriorityQueue sorted by version so I don't have to
-iterate
-the account list to find the greatest version number.
+order. This might not be the case in production. So I created a PriorityQueue sorted by version so I don't have to
+iterate the account list to find the greatest version number.  If a older account is stopped for processing due to 
+a newer version, should that account's token be used in calculating max token per account?
 
 In development, I would work off of feature branches that match a story. And then I would push the PR to GitHub and
 have another person (sometimes multiple people for complex stories) code review the PR. Once approved, I would merge
@@ -48,8 +48,7 @@ the PR into master. I would have a GitHub and Jenkins hook so that Jenkins would
 Once all test cases pass, Jenkins would deploy the JAR info production.
 
 In production, the main processor would listen for messages (either on a messaging system like Kafka or thru a REST
-call)
-and process the message.
+call) and process the message.
 
 Architecture tradeoffs
 -
