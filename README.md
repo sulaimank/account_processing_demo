@@ -47,6 +47,19 @@ Once all test cases pass, Jenkins would deploy the JAR info production.
 In production, the main processor would listen for messages (either on a messaging system like Kafka or thru a REST call)
 and process the message.
 
+Architecture tradeoffs
+-
+I pass a reference to the runnable to Account instead of keeping track of a Future token when submitting the job
+to the thread pool.  It is cleaner in my opinion.
+
+Also, I have one Data class that manages the data for the various account types.  There is no check to ensure
+that the right data fields are populated for the right account type.  I would use a custom data deserializer to
+handle polymorphic deserialization.
+
+I would also add more handling to handle cases where Account data is corrupt or arrives in different orders.
+
+If performance is an issue I would use Kafka queues with each queue handling a particular account type.
+
 Observability & Monitor to add to a production system
 -
 I would monitor the thread pool and adjust either the thread pool strategy (ie. bounded thread pool vs cached).  I would

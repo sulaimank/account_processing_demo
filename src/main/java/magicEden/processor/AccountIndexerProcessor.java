@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This is the main processor.  It accepts inbound accounts and processes each one.
@@ -123,8 +124,16 @@ public class AccountIndexerProcessor {
         // We are done processing - print the highest token value
         displayHighestTokenValue();
 
-        // Shutdown the thread pool.  The thread pool will wait for running threads
-        // to finish.  No new threads added to the thread pool after this
-        accountPool.shutdown();
+        try {
+            // Shutdown the thread pool.  The thread pool will wait for running threads
+            // to finish.  No new threads added to the thread pool after this
+            accountPool.shutdown();
+
+            if (!accountPool.awaitTermination(20, TimeUnit.SECONDS)) {
+                logger.error("************** Threads did not get time to finish within the 20 second window ***********");
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
