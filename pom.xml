@@ -1,8 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>magicEden</groupId>
-    <artifactId>magiceden</artifactId>
+    <groupId>demo</groupId>
+    <artifactId>account_processing_demo</artifactId>
     <packaging>jar</packaging>
     <build>
         <plugins>
@@ -24,7 +24,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>magicEden.DynamicLoadDriver</mainClass>
+                            <mainClass>demo.DynamicLoadDriver</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -54,7 +54,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>magicEden.DynamicLoadDriver</mainClass>
+                            <mainClass>demo.DynamicLoadDriver</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -65,14 +65,13 @@
         </plugins>
     </build>
     <version>1.0-SNAPSHOT</version>
-    <name>magiceden</name>
+    <name>demo</name>
     <url>http://maven.apache.org</url>
 
     <properties>
         <maven.compiler.target>1.11</maven.compiler.target>
         <maven.compiler.source>1.11</maven.compiler.source>
         <slf4jVersion>2.0.7</slf4jVersion>
-        <!--        <maven.jar.plugin.version>2.5</maven.jar.plugin.version>-->
         <powermock.version>1.7.1</powermock.version>
         <maven.shade>3.1.0</maven.shade>
         <src.dir>/src</src.dir>

@@ -1,7 +1,8 @@
-package magicEden.json;
+package demo.json;
 
 /**
  * This class is a POJO that represents the Solana accounts.
+ * @author skarmali
  */
 public class Account {
     // Unique identifier of the account
@@ -101,6 +102,16 @@ public class Account {
 
     public void setProcessAccountRunnable(ProcessAccountRunnable processAccountRunnable) {
         this.processAccountRunnable = processAccountRunnable;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
     }
 
     @Override

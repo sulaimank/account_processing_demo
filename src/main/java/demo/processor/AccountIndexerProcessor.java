@@ -1,11 +1,14 @@
-package magicEden.processor;
+package demo.processor;
 
-import magicEden.json.Account;
-import magicEden.json.AccountType;
-import magicEden.json.ProcessAccountRunnable;
+import com.google.gson.JsonObject;
+import demo.json.Account;
+import demo.json.AccountType;
+import demo.json.ProcessAccountRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -17,6 +20,7 @@ import java.util.stream.Collectors;
  * Business rules are applied:
  * 1) Display a short log message when each tuple has been indexed
  * 2) Display a message when an old callback is canceled in favor of a new one
+ * @author skarmali
  */
 public class AccountIndexerProcessor {
     public static Logger logger = LoggerFactory.getLogger(AccountIndexerProcessor.class);

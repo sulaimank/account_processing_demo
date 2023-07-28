@@ -1,8 +1,8 @@
-package magicEden;
+package demo;
 
-import magicEden.json.Account;
-import magicEden.processor.AccountIndexerProcessor;
-import magicEden.utilities.JsonUtils;
+import demo.json.Account;
+import demo.processor.AccountIndexerProcessor;
+import demo.utilities.JsonUtils;
 import org.apache.log4j.BasicConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * This is the main entry-point for simulating inbound accounts that arrive
  * in random time (0-1 seconds apart).  To simulate data, a data file exists
  * that contains data emulating indexing of data on the blockchain.
+ * @author skarmali
  */
 public class DynamicLoadDriver {
     public static Logger logger = LoggerFactory.getLogger(DynamicLoadDriver.class);

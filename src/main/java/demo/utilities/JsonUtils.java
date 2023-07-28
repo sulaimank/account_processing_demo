@@ -1,9 +1,9 @@
-package magicEden.utilities;
+package demo.utilities;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import magicEden.json.Account;
+import demo.json.Account;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -13,6 +13,7 @@ import java.util.List;
 
 /**
  * JSON utility methods to help parse and process JSON files
+ * @author skarmali
  */
 public class JsonUtils {
     public ArrayList<Account> loadJsonAccountFile(String jsonFileName) {

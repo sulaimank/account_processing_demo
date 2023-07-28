@@ -1,10 +1,10 @@
-package magicEden;
+package demo;
 
 import junit.framework.TestCase;
-import magicEden.json.Account;
-import magicEden.json.AccountType;
-import magicEden.processor.AccountIndexerProcessor;
-import magicEden.utilities.JsonUtils;
+import demo.json.Account;
+import demo.json.AccountType;
+import demo.processor.AccountIndexerProcessor;
+import demo.utilities.JsonUtils;
 import org.apache.log4j.BasicConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Test class that test various scenarios of a JSON data feed
  * containing accounts that represent Solana accounts
+ * @author skarmali
  */
 public class SolanaIndexerTest extends TestCase {
     private static final Logger logger = LoggerFactory.getLogger(SolanaIndexerTest.class);
@@ -98,11 +99,6 @@ public class SolanaIndexerTest extends TestCase {
             // Simulation starts after a delay
             Account submittedAccount = jobSchedular.submit(account);
 
-            try {
-                TimeUnit.MILLISECONDS.sleep(submittedAccount.getCallbackTimeMs() + 100);
-            } catch (InterruptedException ignored) {
-            }
-
             assertTrue(submittedAccount.isIngested());
         });
     }
@@ -127,10 +123,6 @@ public class SolanaIndexerTest extends TestCase {
         accounts.stream().limit(2).forEach(account -> {
             // Simulation starts after a delay
             Account submittedAccount = jobSchedular.submit(account);
-            try {
-                TimeUnit.MILLISECONDS.sleep(1000);
-            } catch (InterruptedException ignored) {
-            }
 
             // v1 has been canceled due to v3 being newer
             // v3 has been ingested.

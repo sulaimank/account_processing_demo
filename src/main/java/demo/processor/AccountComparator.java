@@ -1,6 +1,6 @@
-package magicEden.processor;
+package demo.processor;
 
-import magicEden.json.Account;
+import demo.json.Account;
 
 import java.util.Comparator;
 
@@ -8,6 +8,7 @@ import java.util.Comparator;
  * This comparator is used for the priority queue that keeps
  * the accounts in order based on version.  So highest version
  * is at the top of the queue.
+ * @author skarmali
  */
 public class AccountComparator implements Comparator<Account> {
     @Override

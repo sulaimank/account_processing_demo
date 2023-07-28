@@ -11,7 +11,7 @@ At root of pom.xml, install jar dependencies and build the jar containing all de
 
 To run the driver's main class cd to target where maven builds the jar
 
-1) java -classpath magiceden-1.0-SNAPSHOT-jar-with-dependencies.jar magicEden.DynamicLoadDriver
+1) java -classpath account_processing_demo-1.0-SNAPSHOT-jar-with-dependencies.jar demo.DynamicLoadDriver
 
 Run all JUnit test cases
 

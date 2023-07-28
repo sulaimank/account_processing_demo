@@ -1,4 +1,4 @@
-package magicEden.json;
+package demo.json;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
  * a single account.  To simulate processing, the thread
  * sleeps for a certain time (in milliseconds) based on
  * the account CallbackTimeMs.  This introduces a delay
+ * @author skarmali
  */
 public class ProcessAccountRunnable implements Runnable {
     public static Logger logger = LoggerFactory.getLogger(ProcessAccountRunnable.class);

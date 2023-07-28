@@ -1,9 +1,10 @@
-package magicEden.json;
+package demo.json;
 
 import com.google.gson.annotations.SerializedName;
 
 /**
  * Enumeration of the various account types
+ * @author skarmali
  */
 public enum AccountType {
     @SerializedName("mint")

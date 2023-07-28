@@ -1,4 +1,4 @@
-package magicEden.json;
+package demo.json;
 
 /**
  * This class is a POJO that represents the Solana accounts.
@@ -7,6 +7,7 @@ package magicEden.json;
  * Note: This schema is fixed
  * Note: It would be better to parse JSON data elements in a polymorphic
  * deserialization but to do that would require custom deserialization
+ * @author skarmali
  */
 public class Data {
     private String img;
